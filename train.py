@@ -88,12 +88,12 @@ def train_vae_epoch(epoch, args, rnn, output, data_loader,
 
         if epoch % args.epochs_log==0 and batch_idx==0: # only output first batch's statistics
             print('Epoch: {}/{}, train bce loss: {:.6f}, train kl loss: {:.6f}, graph type: {}, num_layer: {}, hidden: {}'.format(
-                epoch, args.epochs,loss_bce.data[0], loss_kl.data[0], args.graph_type, args.num_layers, args.hidden_size_rnn))
+                epoch, args.epochs,loss_bce.item(), loss_kl.item(), args.graph_type, args.num_layers, args.hidden_size_rnn))
             print('z_mu_mean', z_mu_mean, 'z_mu_min', z_mu_min, 'z_mu_max', z_mu_max, 'z_sgm_mean', z_sgm_mean, 'z_sgm_min', z_sgm_min, 'z_sgm_max', z_sgm_max)
 
         # logging
-        log_value('bce_loss_'+args.fname, loss_bce.data[0], epoch*args.batch_ratio+batch_idx)
-        log_value('kl_loss_' +args.fname, loss_kl.data[0], epoch*args.batch_ratio + batch_idx)
+        log_value('bce_loss_'+args.fname, loss_bce.item(), epoch*args.batch_ratio+batch_idx)
+        log_value('kl_loss_' +args.fname, loss_kl.item(), epoch*args.batch_ratio + batch_idx)
         log_value('z_mu_mean_'+args.fname, z_mu_mean, epoch*args.batch_ratio + batch_idx)
         log_value('z_mu_min_'+args.fname, z_mu_min, epoch*args.batch_ratio + batch_idx)
         log_value('z_mu_max_'+args.fname, z_mu_max, epoch*args.batch_ratio + batch_idx)
@@ -101,7 +101,7 @@ def train_vae_epoch(epoch, args, rnn, output, data_loader,
         log_value('z_sgm_min_'+args.fname, z_sgm_min, epoch*args.batch_ratio + batch_idx)
         log_value('z_sgm_max_'+args.fname, z_sgm_max, epoch*args.batch_ratio + batch_idx)
 
-        loss_sum += loss.data[0]
+        loss_sum += loss.item()
     return loss_sum/(batch_idx+1)
 
 def test_vae_epoch(epoch, args, rnn, output, test_batch_size=16, save_histogram=False, sample_time = 1):
@@ -221,12 +221,12 @@ def train_mlp_epoch(epoch, args, rnn, output, data_loader,
 
         if epoch % args.epochs_log==0 and batch_idx==0: # only output first batch's statistics
             print('Epoch: {}/{}, train loss: {:.6f}, graph type: {}, num_layer: {}, hidden: {}'.format(
-                epoch, args.epochs,loss.data[0], args.graph_type, args.num_layers, args.hidden_size_rnn))
+                epoch, args.epochs,loss.item(), args.graph_type, args.num_layers, args.hidden_size_rnn))
 
         # logging
-        log_value('loss_'+args.fname, loss.data[0], epoch*args.batch_ratio+batch_idx)
+        log_value('loss_'+args.fname, loss.item(), epoch*args.batch_ratio+batch_idx)
 
-        loss_sum += loss.data[0]
+        loss_sum += loss.item()
     return loss_sum/(batch_idx+1)
 
 
@@ -378,12 +378,12 @@ def train_mlp_forward_epoch(epoch, args, rnn, output, data_loader):
 
         if epoch % args.epochs_log==0 and batch_idx==0: # only output first batch's statistics
             print('Epoch: {}/{}, train loss: {:.6f}, graph type: {}, num_layer: {}, hidden: {}'.format(
-                epoch, args.epochs,loss.data[0], args.graph_type, args.num_layers, args.hidden_size_rnn))
+                epoch, args.epochs,loss.item(), args.graph_type, args.num_layers, args.hidden_size_rnn))
 
         # logging
-        log_value('loss_'+args.fname, loss.data[0], epoch*args.batch_ratio+batch_idx)
+        log_value('loss_'+args.fname, loss.item(), epoch*args.batch_ratio+batch_idx)
 
-        loss_sum += loss.data[0]
+        loss_sum += loss.item()
     return loss_sum/(batch_idx+1)
 
 
@@ -510,12 +510,12 @@ def train_rnn_epoch(epoch, args, rnn, output, data_loader,
 
         if epoch % args.epochs_log==0 and batch_idx==0: # only output first batch's statistics
             print('Epoch: {}/{}, train loss: {:.6f}, graph type: {}, num_layer: {}, hidden: {}'.format(
-                epoch, args.epochs,loss.data[0], args.graph_type, args.num_layers, args.hidden_size_rnn))
+                epoch, args.epochs,loss.item(), args.graph_type, args.num_layers, args.hidden_size_rnn))
 
         # logging
-        log_value('loss_'+args.fname, loss.data[0], epoch*args.batch_ratio+batch_idx)
+        log_value('loss_'+args.fname, loss.item(), epoch*args.batch_ratio+batch_idx)
         feature_dim = y.size(1)*y.size(2)
-        loss_sum += loss.data[0]*feature_dim
+        loss_sum += loss.item()*feature_dim
     return loss_sum/(batch_idx+1)
 
 
@@ -631,13 +631,13 @@ def train_rnn_forward_epoch(epoch, args, rnn, output, data_loader):
 
         if epoch % args.epochs_log==0 and batch_idx==0: # only output first batch's statistics
             print('Epoch: {}/{}, train loss: {:.6f}, graph type: {}, num_layer: {}, hidden: {}'.format(
-                epoch, args.epochs,loss.data[0], args.graph_type, args.num_layers, args.hidden_size_rnn))
+                epoch, args.epochs,loss.item(), args.graph_type, args.num_layers, args.hidden_size_rnn))
 
         # logging
-        log_value('loss_'+args.fname, loss.data[0], epoch*args.batch_ratio+batch_idx)
+        log_value('loss_'+args.fname, loss.item(), epoch*args.batch_ratio+batch_idx)
         # print(y_pred.size())
         feature_dim = y_pred.size(0)*y_pred.size(1)
-        loss_sum += loss.data[0]*feature_dim/y.size(0)
+        loss_sum += loss.item()*feature_dim/y.size(0)
     return loss_sum/(batch_idx+1)
 
 
@@ -665,52 +665,90 @@ def train(args, dataset_train, rnn, output):
 
     # start main loop
     time_all = np.zeros(args.epochs)
+
+    best_train_loss = float('inf')
+    best_epoch = None
     while epoch<=args.epochs:
         time_start = tm.time()
         # train
+        train_loss = None
         if 'GraphRNN_VAE' in args.note:
-            train_vae_epoch(epoch, args, rnn, output, dataset_train,
+            train_loss = train_vae_epoch(epoch, args, rnn, output, dataset_train,
                             optimizer_rnn, optimizer_output,
                             scheduler_rnn, scheduler_output)
         elif 'GraphRNN_MLP' in args.note:
-            train_mlp_epoch(epoch, args, rnn, output, dataset_train,
+            train_loss = train_mlp_epoch(epoch, args, rnn, output, dataset_train,
                             optimizer_rnn, optimizer_output,
                             scheduler_rnn, scheduler_output)
         elif 'GraphRNN_RNN' in args.note:
-            train_rnn_epoch(epoch, args, rnn, output, dataset_train,
+            train_loss = train_rnn_epoch(epoch, args, rnn, output, dataset_train,
                             optimizer_rnn, optimizer_output,
                             scheduler_rnn, scheduler_output)
         time_end = tm.time()
         time_all[epoch - 1] = time_end - time_start
+
+
         # test
-        if epoch % args.epochs_test == 0 and epoch>=args.epochs_test_start:
-            for sample_time in range(1,4):
-                G_pred = []
-                while len(G_pred)<args.test_total_size:
-                    if 'GraphRNN_VAE' in args.note:
-                        G_pred_step = test_vae_epoch(epoch, args, rnn, output, test_batch_size=args.test_batch_size,sample_time=sample_time)
-                    elif 'GraphRNN_MLP' in args.note:
-                        G_pred_step = test_mlp_epoch(epoch, args, rnn, output, test_batch_size=args.test_batch_size,sample_time=sample_time)
-                    elif 'GraphRNN_RNN' in args.note:
-                        G_pred_step = test_rnn_epoch(epoch, args, rnn, output, test_batch_size=args.test_batch_size)
-                    G_pred.extend(G_pred_step)
-                # save graphs
-                fname = args.graph_save_path + args.fname_pred + str(epoch) +'_'+str(sample_time) + '.dat'
-                save_graph_list(G_pred, fname)
-                if 'GraphRNN_RNN' in args.note:
-                    break
-            print('test done, graphs saved')
+        # if epoch % args.epochs_test == 0 and epoch>=args.epochs_test_start:
+
 
 
         # save model checkpoint
-        if args.save:
-            if epoch % args.epochs_save == 0:
-                fname = args.model_save_path + args.fname + 'lstm_' + str(epoch) + '.dat'
-                torch.save(rnn.state_dict(), fname)
-                fname = args.model_save_path + args.fname + 'output_' + str(epoch) + '.dat'
-                torch.save(output.state_dict(), fname)
+            # if args.save:
+            #     if epoch % args.epochs_save == 0:
+            #         fname = args.model_save_path + args.fname + 'lstm_' + str(epoch) + '.dat'
+            #         torch.save(rnn.state_dict(), fname)
+            #         fname = args.model_save_path + args.fname + 'output_' + str(epoch) + '.dat'
+            #         torch.save(output.state_dict(), fname)
+
+        if train_loss < best_train_loss:
+            best_train_loss = train_loss
+            best_epoch = epoch
+            torch.save(
+                rnn.state_dict(),
+                os.path.join(args.model_save_path, args.fname + 'best_lstm.dat')
+            )
+            torch.save(
+                output.state_dict(),
+                os.path.join(args.model_save_path, args.fname + 'best_output.dat')
+            )
+            print(f"[Epoch {epoch}] New best train loss = {train_loss:.4f}  →  saved best_model.")
         epoch += 1
     np.save(args.timing_save_path+args.fname,time_all)
+
+    # test
+    assert best_epoch is not None, "No best_epoch found!"
+    rnn.load_state_dict(torch.load(
+        os.path.join(args.model_save_path, args.fname + 'best_lstm.dat')
+    ))
+    output.load_state_dict(torch.load(
+        os.path.join(args.model_save_path, args.fname + 'best_output.dat')
+    ))
+    print(f"Loaded best model from epoch {best_epoch} (loss={best_train_loss:.4f}), now generating graphs")
+
+    for sample_time in range(1, 4):
+        G_pred = []
+        while len(G_pred) < args.test_total_size:
+            if 'GraphRNN_VAE' in args.note:
+                G_pred_step = test_vae_epoch(epoch, args, rnn, output, test_batch_size=args.test_batch_size,
+                                             sample_time=sample_time)
+            elif 'GraphRNN_MLP' in args.note:
+                G_pred_step = test_mlp_epoch(epoch, args, rnn, output, test_batch_size=args.test_batch_size,
+                                             sample_time=sample_time)
+            elif 'GraphRNN_RNN' in args.note:
+                G_pred_step = test_rnn_epoch(epoch, args, rnn, output, test_batch_size=args.test_batch_size)
+            G_pred.extend(G_pred_step)
+        # save graphs
+        fname = args.graph_save_path + args.fname_pred + str(epoch) + '_' + str(sample_time) + '.dat'
+        save_graph_list(G_pred, fname)
+        if 'GraphRNN_RNN' in args.note:
+            break
+    print('test done, graphs saved')
+
+    npz_base = os.path.splitext(fname)[0]
+    for i, g in enumerate(G_pred):
+        adj = nx.to_scipy_sparse_array(g, dtype=float)
+        sp.save_npz(f"{npz_base}_{i}.npz", adj)
 
 
 ########### for graph completion task

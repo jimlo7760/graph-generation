@@ -388,7 +388,7 @@ class Graph_sequence_sampler_pytorch(torch.utils.data.Dataset):
         self.adj_all = []
         self.len_all = []
         for G in G_list:
-            self.adj_all.append(np.asarray(nx.to_numpy_matrix(G)))
+            self.adj_all.append(np.asarray(nx.to_numpy_array(G)))
             self.len_all.append(G.number_of_nodes())
         if max_num_node is None:
             self.n = max(self.len_all)
@@ -419,7 +419,7 @@ class Graph_sequence_sampler_pytorch(torch.utils.data.Dataset):
         x_idx = np.random.permutation(adj_copy.shape[0])
         adj_copy = adj_copy[np.ix_(x_idx, x_idx)]
         adj_copy_matrix = np.asmatrix(adj_copy)
-        G = nx.from_numpy_matrix(adj_copy_matrix)
+        G = nx.from_numpy_array(adj_copy_matrix)
         # then do bfs in the permuted G
         start_idx = np.random.randint(adj_copy.shape[0])
         x_idx = np.array(bfs_seq(G, start_idx))

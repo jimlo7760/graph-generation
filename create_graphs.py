@@ -149,6 +149,12 @@ def create(args):
         shuffle(graphs)
         graphs = graphs[0:200]
         args.max_prev_node = 15
+    elif args.graph_type == 'cora':
+        _, _, G = Graph_load(dataset='cora')
+        # G = G.subgraph(max(nx.connected_components(G), key=len)).copy()
+        G = nx.convert_node_labels_to_integers(G)
+        graphs = [G]  # GraphRNN expects a list
+        args.max_prev_node = G.number_of_nodes() - 1
 
     return graphs
 

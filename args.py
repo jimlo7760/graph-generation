@@ -5,7 +5,7 @@ class Args():
         ### if clean tensorboard
         self.clean_tensorboard = False
         ### Which CUDA GPU device is used for training
-        self.cuda = 1
+        self.cuda = 0
 
         ### Which GraphRNN model variant is used.
         # The simple version of Graph RNN
@@ -23,7 +23,7 @@ class Args():
         # self.graph_type = 'caveman_small'
         # self.graph_type = 'caveman_small_single'
         # self.graph_type = 'community4'
-        self.graph_type = 'grid'
+        self.graph_type = 'cora'
         # self.graph_type = 'grid_small'
         # self.graph_type = 'ladder_small'
 
@@ -56,9 +56,9 @@ class Args():
         self.embedding_size_rnn_output = 8 # the embedding size for output rnn
         self.embedding_size_output = int(64/self.parameter_shrink) # the embedding size for output (VAE/MLP)
 
-        self.batch_size = 32 # normal: 32, and the rest should be changed accordingly
-        self.test_batch_size = 32
-        self.test_total_size = 1000
+        self.batch_size = 8 # normal: 32, and the rest should be changed accordingly
+        self.test_batch_size = 1
+        self.test_total_size = 1
         self.num_layers = 4
 
         ### training config

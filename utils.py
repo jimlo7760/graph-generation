@@ -427,10 +427,10 @@ def get_graph(adj):
     :return:
     '''
     # remove all zeros rows and columns
-    adj = adj[~np.all(adj == 0, axis=1)]
-    adj = adj[:, ~np.all(adj == 0, axis=0)]
+    # adj = adj[~np.all(adj == 0, axis=1)]
+    # adj = adj[:, ~np.all(adj == 0, axis=0)]
     adj = np.asmatrix(adj)
-    G = nx.from_numpy_matrix(adj)
+    G = nx.from_numpy_array(adj)
     return G
 
 # save a list of graphs

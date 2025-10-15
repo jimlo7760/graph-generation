@@ -33,9 +33,15 @@ if __name__ == '__main__':
     random.seed(123)
     shuffle(graphs)
     graphs_len = len(graphs)
-    graphs_test = graphs[int(0.8 * graphs_len):]
-    graphs_train = graphs[0:int(0.8*graphs_len)]
-    graphs_validate = graphs[0:int(0.2*graphs_len)]
+    if graphs_len == 1:
+        # keep the single large graph for every phase
+        graphs_train = graphs.copy()
+        graphs_validate = graphs.copy()
+        graphs_test = graphs.copy()
+    else:
+        graphs_test = graphs[int(0.8 * graphs_len):]
+        graphs_train = graphs[0:int(0.8 * graphs_len)]
+        graphs_validate = graphs[0:int(0.2 * graphs_len)]
 
     # if use pre-saved graphs
     # dir_input = "/dfs/scratch0/jiaxuany0/graphs/"

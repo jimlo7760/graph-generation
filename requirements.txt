@@ -1,4 +1,4 @@
 tensorboard-logger
 tensorflow
-networkx==1.11
+networkx==3.0
 pyemd
